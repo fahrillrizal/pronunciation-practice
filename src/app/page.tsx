@@ -1,4 +1,4 @@
-import { PracticeView } from "@/components/features/practice";
+import { PracticeView } from "@/components/features/practice/practice-view";
 
 /**
  * Home page — renders the phoneme practice tool.

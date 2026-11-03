@@ -1,5 +1,4 @@
-import type { PhonemeResult } from "@/types";
-import { getWordResult, type WordResult } from "@/lib/word-result";
+import type { WordResult } from "@/lib/word-result";
 
 interface ResultBadgeProps {
   result: WordResult;
@@ -21,17 +20,3 @@ export function ResultBadge({ result, className = "" }: ResultBadgeProps) {
     </span>
   );
 }
-
-/**
- * Convenience wrapper: computes WordResult from phonemes, then renders badge.
- */
-export function WordResultBadge({
-  phonemes,
-  className,
-}: {
-  phonemes: PhonemeResult[];
-  className?: string;
-}) {
-  return <ResultBadge result={getWordResult(phonemes)} className={className} />;
-}
-

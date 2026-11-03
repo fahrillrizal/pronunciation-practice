@@ -1,1 +1,1 @@
-export { ResultBadge, WordResultBadge } from "./result-badge";
+export { ResultBadge } from "./result-badge";

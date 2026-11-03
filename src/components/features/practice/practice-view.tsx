@@ -1,44 +1,37 @@
 "use client";
 
 import { usePracticeState } from "@/hooks";
+import { REFERENCE_SOURCE } from "@/data";
 import {
   TextInputPanel,
   RecordPanel,
-  SentenceRow,
   DurationComparison,
   Waveforms,
+  PhonemeScores,
+  WordDisplay,
   ArticulationPanel,
-  UnsupportedNotice,
 } from "@/components/features/practice";
 
-/**
- * Main practice view component.
- *
- * Orchestrates all practice sub-components using the centralized
- * usePracticeState hook. This is the only "use client" boundary
- * for the practice feature.
- */
 export function PracticeView() {
   const {
     screenState,
-    activeAudioTarget,
-    recordingProgress,
-    textInput,
+    word,
     hasText,
-    allWordsAnnotated,
-    currentSentenceAttempt,
-    safeWordIndex,
-    selectedWord,
-    selectedPhonemeIndex,
-    selectedPhonemeResult,
+    analysis,
+    error,
+    recordingPhase,
+    isPlayingReference,
+    isPlayingRecording,
+    hasRecording,
+    selectedPhoneme,
     articulationEntry,
     isArticulationOpen,
-    handleSelectPhrase,
-    handleRandomPhrase,
-    handleClearText,
+    handleGenerate,
+    handleClear,
     handlePlayReference,
+    handlePlayRecording,
+    handlePlayPhoneme,
     handleRecord,
-    handleSelectWord,
     handleSelectPhoneme,
     handleCloseArticulation,
   } = usePracticeState();
@@ -46,119 +39,90 @@ export function PracticeView() {
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900 font-sans antialiased">
       <main className="max-w-[720px] mx-auto px-4 py-8 space-y-6">
-        {/* Header */}
         <header className="border-b border-neutral-200 pb-3">
           <h1 className="text-xl font-semibold tracking-tight text-neutral-900">
             Latihan Pengucapan Fonem
           </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Analisis durasi dan kesesuaian fonem per kata dalam kalimat dengan
-            batas fonem referensi.
+            Bandingkan ucapanmu dengan rekaman penutur asli menggunakan MFCC + DTW.
           </p>
         </header>
 
-        {/* Section 1: Text Input & Recording */}
-        <section aria-label="Masukan Teks dan Perekaman" className="space-y-3">
+        <section aria-label="Masukan dan perekaman" className="space-y-3">
           <div className="grid grid-cols-1 min-[760px]:grid-cols-2 gap-3 items-stretch">
             <TextInputPanel
-              value={textInput}
-              onRandomPhrase={handleRandomPhrase}
-              onClear={handleClearText}
-              allWordsAnnotated={allWordsAnnotated}
-              isPlayingReference={
-                screenState === "playing" && activeAudioTarget === "reference"
-              }
+              value={word}
+              onGenerate={handleGenerate}
+              onClear={handleClear}
+              isPlayingReference={isPlayingReference}
               onPlayReference={handlePlayReference}
+              sourceLabel={REFERENCE_SOURCE}
             />
             <RecordPanel
               hasText={hasText}
               hasResult={screenState === "result"}
               isRecording={screenState === "recording"}
+              isProcessing={screenState === "processing"}
+              phase={recordingPhase}
               onRecord={handleRecord}
             />
           </div>
         </section>
 
-        {/* Section 2: Sentence Row */}
-        {screenState !== "empty" &&
-          currentSentenceAttempt.words.length > 0 && (
-            <section aria-label="Deretan Kata Kalimat">
-              <SentenceRow
-                words={currentSentenceAttempt.words}
-                selectedWordIndex={safeWordIndex}
-                onSelectWord={handleSelectWord}
-                state={screenState}
-                recordingProgress={recordingProgress}
-              />
-            </section>
-          )}
+        {error && (
+          <div className="border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</div>
+        )}
 
-        {/* Processing skeleton */}
-        {screenState === "processing" && <ProcessingSkeleton />}
+        {hasText && screenState !== "empty" && (
+          <WordDisplay
+            word={word}
+            analysis={analysis}
+            state={screenState}
+            phase={recordingPhase}
+            selectedPhonemeIndex={selectedPhoneme?.index ?? null}
+            onSelectPhoneme={handleSelectPhoneme}
+            hasRecording={hasRecording}
+            isPlayingRecording={isPlayingRecording}
+            onPlayRecording={handlePlayRecording}
+          />
+        )}
 
-        {/* Section 3: Word Analysis */}
-        {screenState === "result" && selectedWord && (
-          <section aria-label="Area Analisis Kata Terpilih" className="space-y-5">
-            {selectedWord.kind === "synthetic" ? (
-              <UnsupportedNotice
-                onPickCuratedWord={() =>
-                  handleSelectPhrase("what is your name?")
-                }
-              />
-            ) : (
-              <>
-                <DurationComparison
-                  reference={selectedWord.reference}
-                  phonemes={selectedWord.phonemes}
-                  referenceTotalMs={selectedWord.referenceTotalMs}
-                  userTotalMs={selectedWord.userTotalMs}
-                  callouts={selectedWord.callouts}
-                  selectedPhonemeIndex={selectedPhonemeIndex}
-                  onSelectPhoneme={handleSelectPhoneme}
-                />
-                <Waveforms
-                  referenceWaveform={selectedWord.referenceWaveform}
-                  userWaveform={selectedWord.userWaveform}
-                  referenceTotalMs={selectedWord.referenceTotalMs}
-                  userTotalMs={selectedWord.userTotalMs}
-                  phonemes={selectedWord.phonemes}
-                  onSelectPhoneme={handleSelectPhoneme}
-                />
-              </>
-            )}
+        {screenState === "result" && analysis && (
+          <section aria-label="Hasil analisis" className="space-y-5">
+            <DurationComparison
+              phonemes={analysis.phonemes}
+              userSpans={analysis.userSpans}
+              referenceTotalMs={analysis.referenceTotalMs}
+              userTotalMs={analysis.userTotalMs}
+              callouts={analysis.callouts}
+              selectedPhonemeIndex={selectedPhoneme?.index ?? null}
+              onSelectPhoneme={handleSelectPhoneme}
+            />
+            <Waveforms
+              referenceWaveform={analysis.referenceWaveform}
+              userWaveform={analysis.userWaveform}
+              referenceTotalMs={analysis.referenceTotalMs}
+              userTotalMs={analysis.userTotalMs}
+              phonemes={analysis.phonemes}
+              userSpans={analysis.userSpans}
+              onSelectPhoneme={handleSelectPhoneme}
+            />
+            <PhonemeScores
+              phonemes={analysis.phonemes}
+              selectedPhonemeIndex={selectedPhoneme?.index ?? null}
+              onSelectPhoneme={handleSelectPhoneme}
+            />
           </section>
         )}
 
-        {/* Articulation Panel (modal/sheet) */}
         <ArticulationPanel
           isOpen={isArticulationOpen}
           onClose={handleCloseArticulation}
-          phonemeResult={selectedPhonemeResult}
+          phonemeResult={selectedPhoneme}
           entry={articulationEntry}
-          onPlayPhoneme={() => {}}
+          onPlayPhoneme={handlePlayPhoneme}
         />
       </main>
     </div>
   );
 }
-
-// ─── Sub-components ──────────────────────────────────────────────────
-
-function ProcessingSkeleton() {
-  return (
-    <section
-      aria-label="Memproses Hasil"
-      className="border border-neutral-200 bg-white p-6 space-y-4"
-    >
-      <div className="text-xs uppercase tracking-wider font-semibold text-neutral-500">
-        Menganalisis sinyal akustik...
-      </div>
-      <div className="space-y-3">
-        <div className="h-5 bg-neutral-200 w-1/4 animate-pulse" />
-        <div className="h-32 bg-neutral-100 border border-neutral-200 animate-pulse" />
-        <div className="h-20 bg-neutral-100 border border-neutral-200 animate-pulse" />
-      </div>
-    </section>
-  );
-}
-

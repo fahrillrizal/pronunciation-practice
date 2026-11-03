@@ -2,15 +2,24 @@
   "name": "fonem-practice",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "test": "node --test \"tests/**/*.test.ts\"",
+    "check:exports": "node tools/check-exports.ts",
+    "check": "npm run type-check && npm run lint && npm run check:exports && npm test",
+    "corpus:fetch": "node tools/fetch-corpus.ts",
+    "vercel-build": "npm run corpus:fetch && npm run annotations:fetch && npm run refs:build && next build",
+    "annotations:fetch": "node tools/fetch-annotations.ts",
+    "refs:build": "node tools/build-reference-assets.ts",
+    "accuracy:measure": "node tools/measure-accuracy.ts"
   },
   "dependencies": {
     "lucide-react": "^0.546.0",
+    "meyda": "^5.6.3",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0"
@@ -20,9 +29,16 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/tar-fs": "^2.0.4",
+    "@types/unbzip2-stream": "^1.4.3",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tar-fs": "^3.1.3",
+    "typescript": "^5",
+    "unbzip2-stream": "^1.4.3"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

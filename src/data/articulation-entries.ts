@@ -1,7 +1,6 @@
 import type { ArticulationEntry } from "@/types";
 
-/** Pronunciation guide entries indexed by ARPAbet phoneme symbol */
-export const MOCK_ARTICULATION_ENTRIES: Record<string, ArticulationEntry> = {
+export const ARTICULATION_ENTRIES: Record<string, ArticulationEntry> = {
   TH: {
     phoneme: "TH",
     howTo: "Tempatkan ujung lidah sedikit di antara gigi seri atas dan bawah (posisi interdental). Alirkan udara keluar perlahan melalui celah tanpa menggetarkan pita suara (voiceless dental fricative).",

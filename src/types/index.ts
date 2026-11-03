@@ -1,15 +1,4 @@
-export type {
-  Milliseconds,
-  PhonemeVerdict,
-  WordKind,
-  ScreenState,
-} from "./phoneme";
-
-export type {
-  PhonemeSegment,
-  PhonemeResult,
-  WordAnalysis,
-  SentenceAttempt,
-} from "./word";
-
-export type { ArticulationEntry, WordGroup } from "./articulation";
+export type { Milliseconds, PhonemeVerdict, ScreenState } from "./phoneme";
+export type { WordAnalysis } from "./word";
+export type { ArticulationEntry } from "./articulation";
+export type { PhonemeScore, TimeSpan } from "@/core/types";

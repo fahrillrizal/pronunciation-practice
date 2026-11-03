@@ -1,18 +1,16 @@
-import type { Milliseconds, PhonemeResult, PhonemeSegment } from "@/types";
+import type { Milliseconds, PhonemeScore, TimeSpan } from "@/types";
 import { getWordResult } from "@/lib/word-result";
 import { ResultBadge } from "@/components/ui";
 
 interface DurationComparisonProps {
-  reference: PhonemeSegment[];
-  phonemes: PhonemeResult[];
+  phonemes: PhonemeScore[];
+  userSpans: TimeSpan[];
   referenceTotalMs: Milliseconds;
   userTotalMs: Milliseconds;
   callouts: string[];
   selectedPhonemeIndex: number | null;
   onSelectPhoneme: (index: number) => void;
 }
-
-// ─── SVG Layout Constants ────────────────────────────────────────────
 
 const SVG_WIDTH = 660;
 const SVG_HEIGHT = 175;
@@ -22,18 +20,38 @@ const TOP_BAR_Y = 28;
 const BOTTOM_BAR_Y = 98;
 const BAR_HEIGHT = 32;
 
-/**
- * Dual-bar timeline comparing reference vs user phoneme durations.
- *
- * Renders an inline SVG with:
- * - Top bar: reference phoneme segments
- * - Bottom bar: user phoneme segments (color-coded by verdict)
- * - Dashed connectors between corresponding segment boundaries
- * - Callout feedback below the chart
- */
+interface Bar extends TimeSpan {
+  phoneme: string;
+  index: number;
+}
+
+function referenceBars(phonemes: readonly PhonemeScore[]): Bar[] {
+  return phonemes.reduce<Bar[]>((bars, phoneme) => {
+    const startMs = bars.at(-1)?.endMs ?? 0;
+    bars.push({ ...phoneme, startMs, endMs: startMs + phoneme.referenceDurationMs });
+    return bars;
+  }, []);
+}
+
+function userBars(phonemes: readonly PhonemeScore[], spans: readonly TimeSpan[]): Bar[] {
+  return phonemes.map((phoneme, index) => ({
+    ...phoneme,
+    ...(spans[index] ?? { startMs: 0, endMs: 0 }),
+  }));
+}
+
+function activate(handler: () => void) {
+  return (event: React.KeyboardEvent) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handler();
+    }
+  };
+}
+
 export function DurationComparison({
-  reference,
   phonemes,
+  userSpans,
   referenceTotalMs,
   userTotalMs,
   callouts,
@@ -41,36 +59,30 @@ export function DurationComparison({
   onSelectPhoneme,
 }: DurationComparisonProps) {
   const maxDurationMs = Math.max(referenceTotalMs, userTotalMs, 1);
-
-  // Build user segments with cumulative timing
-  let userCumulative = 0;
-  const userSegments = phonemes.map((p) => {
-    const startMs = userCumulative;
-    const endMs = userCumulative + p.userDurationMs;
-    userCumulative = endMs;
-    return { ...p, startMs, endMs };
-  });
+  const reference = referenceBars(phonemes);
+  const user = userBars(phonemes, userSpans);
+  const x = (ms: Milliseconds) => START_X + (ms / maxDurationMs) * PLOT_WIDTH;
+  const width = (span: TimeSpan) => Math.max(1, ((span.endMs - span.startMs) / maxDurationMs) * PLOT_WIDTH);
 
   return (
     <div className="border border-neutral-200 bg-white p-5 sm:p-6 space-y-4">
-      {/* Header */}
       <div className="flex items-baseline justify-between flex-wrap gap-2 border-b border-neutral-100 pb-3">
         <h3 className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-neutral-900">
-          ANALISIS DURASI &amp; KESESUAIAN FONEM
+          Analisis Durasi &amp; Kesesuaian Fonem
           <ResultBadge result={getWordResult(phonemes)} />
         </h3>
         <span className="text-xs text-neutral-600 font-mono">
-          Total ref: {referenceTotalMs}ms | Ucapan: {userTotalMs}ms
+          Referensi {Math.round(referenceTotalMs)} ms · Ucapan {Math.round(userTotalMs)} ms
         </span>
       </div>
 
-      {/* SVG Timeline */}
       <div className="w-full overflow-x-auto pb-1">
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full min-w-[560px] h-auto select-none font-sans"
+          role="group"
+          aria-label="Perbandingan durasi fonem referensi dan ucapan"
         >
-          {/* Row labels */}
           <text x="12" y={TOP_BAR_Y + 20} className="text-[12px] font-medium fill-neutral-700">
             Referensi
           </text>
@@ -78,132 +90,74 @@ export function DurationComparison({
             Ucapanmu
           </text>
 
-          {/* Connectors */}
-          {reference.map((refSeg, idx) => {
-            const userSeg = userSegments[idx];
-            if (!userSeg) return null;
-
-            const xRefStart = START_X + (refSeg.startMs / maxDurationMs) * PLOT_WIDTH;
-            const xUserStart = START_X + (userSeg.startMs / maxDurationMs) * PLOT_WIDTH;
-            const xRefEnd = START_X + (refSeg.endMs / maxDurationMs) * PLOT_WIDTH;
-            const xUserEnd = START_X + (userSeg.endMs / maxDurationMs) * PLOT_WIDTH;
-
+          {reference.map((bar) => {
+            const userBar = user[bar.index] ?? bar;
             return (
-              <g key={`conn-${idx}`}>
-                {idx === 0 && (
+              <g key={`connector-${bar.index}`}>
+                {bar.index === 0 && (
                   <line
-                    x1={xRefStart} y1={TOP_BAR_Y + BAR_HEIGHT}
-                    x2={xUserStart} y2={BOTTOM_BAR_Y}
-                    stroke="#a3a3a3" strokeDasharray="3 3" strokeWidth="1"
+                    x1={x(bar.startMs)}
+                    y1={TOP_BAR_Y + BAR_HEIGHT}
+                    x2={x(userBar.startMs)}
+                    y2={BOTTOM_BAR_Y}
+                    stroke="#a3a3a3"
+                    strokeDasharray="3 3"
+                    strokeWidth="1"
                   />
                 )}
                 <line
-                  x1={xRefEnd} y1={TOP_BAR_Y + BAR_HEIGHT}
-                  x2={xUserEnd} y2={BOTTOM_BAR_Y}
-                  stroke="#a3a3a3" strokeDasharray="3 3" strokeWidth="1"
+                  x1={x(bar.endMs)}
+                  y1={TOP_BAR_Y + BAR_HEIGHT}
+                  x2={x(userBar.endMs)}
+                  y2={BOTTOM_BAR_Y}
+                  stroke="#a3a3a3"
+                  strokeDasharray="3 3"
+                  strokeWidth="1"
                 />
               </g>
             );
           })}
 
-          {/* Reference bar segments */}
-          {reference.map((seg, idx) => {
-            const segDuration = seg.endMs - seg.startMs;
-            const x = START_X + (seg.startMs / maxDurationMs) * PLOT_WIDTH;
-            const width = Math.max(1, (segDuration / maxDurationMs) * PLOT_WIDTH);
-            const isNarrow = width < 30;
-            const isSelected = selectedPhonemeIndex === idx;
+          {reference.map((bar) => (
+            <PhonemeBar
+              key={`reference-${bar.index}`}
+              bar={bar}
+              x={x(bar.startMs)}
+              width={width(bar)}
+              y={TOP_BAR_Y}
+              labelAbove
+              selected={selectedPhonemeIndex === bar.index}
+              onSelect={() => onSelectPhoneme(bar.index)}
+            />
+          ))}
 
-            return (
-              <g key={`ref-${idx}`} className="cursor-pointer" onClick={() => onSelectPhoneme(idx)}>
-                <rect
-                  x={x} y={TOP_BAR_Y} width={width} height={BAR_HEIGHT}
-                  fill={isSelected ? "#e5e5e5" : "#f5f5f5"}
-                  stroke={isSelected ? "#171717" : "#a3a3a3"}
-                  strokeWidth={isSelected ? 1.5 : 1}
-                />
-                {isNarrow ? (
-                  <g>
-                    <line
-                      x1={x + width / 2} y1={TOP_BAR_Y - 2}
-                      x2={x + width / 2} y2={TOP_BAR_Y - 8}
-                      stroke="#737373" strokeWidth="1"
-                    />
-                    <text
-                      x={x + width / 2} y={TOP_BAR_Y - 10}
-                      textAnchor="middle"
-                      className="font-mono text-[11px] font-medium fill-neutral-800"
-                    >
-                      {seg.phoneme}
-                    </text>
-                  </g>
-                ) : (
-                  <text
-                    x={x + width / 2} y={TOP_BAR_Y + 20}
-                    textAnchor="middle"
-                    className="font-mono text-[12px] font-medium fill-neutral-800 pointer-events-none"
-                  >
-                    {seg.phoneme}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-
-          {/* User bar segments */}
-          {userSegments.map((seg) => {
-            const x = START_X + (seg.startMs / maxDurationMs) * PLOT_WIDTH;
-            const width = Math.max(1, (seg.userDurationMs / maxDurationMs) * PLOT_WIDTH);
-            const isNarrow = width < 30;
-            const isSelected = selectedPhonemeIndex === seg.index;
-
-            const style = getVerdictStyle(seg.verdict, isSelected);
-
-            return (
-              <g key={`user-${seg.index}`} className="cursor-pointer" onClick={() => onSelectPhoneme(seg.index)}>
-                <rect
-                  x={x} y={BOTTOM_BAR_Y} width={width} height={BAR_HEIGHT}
-                  fill={style.fill} stroke={style.stroke}
-                  strokeWidth={isSelected ? 2 : 1}
-                  strokeDasharray={style.dash}
-                />
-                {isNarrow ? (
-                  <g>
-                    <line
-                      x1={x + width / 2} y1={BOTTOM_BAR_Y + BAR_HEIGHT + 2}
-                      x2={x + width / 2} y2={BOTTOM_BAR_Y + BAR_HEIGHT + 8}
-                      stroke="#737373" strokeWidth="1"
-                    />
-                    <text
-                      x={x + width / 2} y={BOTTOM_BAR_Y + BAR_HEIGHT + 18}
-                      textAnchor="middle"
-                      className={`font-mono text-[11px] ${style.textClass}`}
-                    >
-                      {seg.phoneme}
-                    </text>
-                  </g>
-                ) : (
-                  <text
-                    x={x + width / 2} y={BOTTOM_BAR_Y + 20}
-                    textAnchor="middle"
-                    className={`font-mono text-[12px] pointer-events-none ${style.textClass}`}
-                  >
-                    {seg.phoneme}
-                  </text>
-                )}
-              </g>
-            );
-          })}
+          {user.map((bar) => (
+            <PhonemeBar
+              key={`user-${bar.index}`}
+              bar={bar}
+              x={x(bar.startMs)}
+              width={width(bar)}
+              y={BOTTOM_BAR_Y}
+              verdict={phonemes[bar.index].verdict}
+              selected={selectedPhonemeIndex === bar.index}
+              onSelect={() => onSelectPhoneme(bar.index)}
+            />
+          ))}
         </svg>
       </div>
 
-      {/* Callouts */}
+      <div className="flex flex-wrap gap-3 text-[11px] text-neutral-600">
+        <Legend swatch="border border-neutral-400 bg-neutral-50" label="Sesuai" />
+        <Legend swatch="border border-red-700 bg-red-100" label="Perlu dilatih" />
+        <Legend swatch="border border-dashed border-neutral-500 bg-neutral-100" label="Keyakinan rendah" />
+      </div>
+
       {callouts.length > 0 && (
-        <div className="pt-3 border-t border-neutral-100 space-y-1.5">
+        <div className="pt-3 border-t border-neutral-100">
           <ul className="space-y-1">
             {callouts.map((callout, index) => (
               <li
-                key={index}
+                key={`${index}-${callout}`}
                 className="text-xs sm:text-sm text-neutral-800 leading-relaxed pl-3 border-l-2 border-neutral-300"
               >
                 {callout}
@@ -216,42 +170,83 @@ export function DurationComparison({
   );
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────
-
-interface VerdictStyle {
-  fill: string;
-  stroke: string;
-  dash: string | undefined;
-  textClass: string;
+interface PhonemeBarProps {
+  bar: Bar;
+  x: number;
+  width: number;
+  y: number;
+  verdict?: PhonemeScore["verdict"];
+  labelAbove?: boolean;
+  selected: boolean;
+  onSelect: () => void;
 }
 
-function getVerdictStyle(
-  verdict: string,
-  isSelected: boolean,
-): VerdictStyle {
+function PhonemeBar({ bar, x, width, y, verdict = "ok", labelAbove = false, selected, onSelect }: PhonemeBarProps) {
+  const style = verdictStyle(verdict, selected);
+  const labelY = labelAbove ? y - 10 : y + BAR_HEIGHT + 18;
+  const narrow = width < 30;
+
+  return (
+    <g
+      role="button"
+      tabIndex={0}
+      aria-label={`Fonem ${bar.phoneme}`}
+      className="cursor-pointer focus:outline-none"
+      onClick={onSelect}
+      onKeyDown={activate(onSelect)}
+    >
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={BAR_HEIGHT}
+        fill={style.fill}
+        stroke={style.stroke}
+        strokeWidth={selected ? 2 : 1}
+        strokeDasharray={style.dash}
+      />
+      <text
+        x={x + width / 2}
+        y={narrow ? labelY : y + 20}
+        textAnchor="middle"
+        className={`font-mono text-[12px] ${style.text} ${narrow ? "font-medium" : "pointer-events-none"}`}
+      >
+        {bar.phoneme}
+      </text>
+      {narrow && (
+        <line
+          x1={x + width / 2}
+          y1={labelAbove ? y - 2 : y + BAR_HEIGHT + 2}
+          x2={x + width / 2}
+          y2={labelAbove ? y - 8 : y + BAR_HEIGHT + 8}
+          stroke="#737373"
+          strokeWidth="1"
+        />
+      )}
+    </g>
+  );
+}
+
+function Legend({ swatch, label }: { swatch: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`inline-block w-3 h-3 ${swatch}`} />
+      {label}
+    </span>
+  );
+}
+
+function verdictStyle(verdict: PhonemeScore["verdict"], selected: boolean) {
   if (verdict === "mismatch") {
-    return {
-      fill: "#fef3c7",
-      stroke: "#b45309",
-      dash: undefined,
-      textClass: "fill-amber-950 font-semibold",
-    };
+    return { fill: "#fee2e2", stroke: "#b91c1c", dash: undefined, text: "fill-red-900 font-semibold" };
   }
-
   if (verdict === "low-confidence") {
-    return {
-      fill: "#f5f5f5",
-      stroke: "#737373",
-      dash: "2 2",
-      textClass: "fill-neutral-700",
-    };
+    return { fill: "#f5f5f5", stroke: "#737373", dash: "2 2", text: "fill-neutral-700" };
   }
-
   return {
-    fill: isSelected ? "#e5e5e5" : "#f5f5f5",
-    stroke: isSelected ? "#171717" : "#a3a3a3",
+    fill: selected ? "#e5e5e5" : "#fafafa",
+    stroke: selected ? "#171717" : "#a3a3a3",
     dash: undefined,
-    textClass: "fill-neutral-800",
+    text: "fill-neutral-800",
   };
 }
-

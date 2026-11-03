@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fonem Practice
 
-## Getting Started
+Latihan pelafalan bahasa Inggris berbasis web: pilih kata dari CMU ARCTIC,
+dengarkan referensi, rekam ucapan, lalu bandingkan durasi dan kecocokan fonem
+dengan MFCC + DTW di dalam peramban.
 
-First, run the development server:
+## Kebutuhan
+
+- Node.js 22 atau lebih baru
+- CMU ARCTIC untuk penutur `slt` dan `bdl` di `dataset/cmu_us_<speaker>_arctic`
+  (`wav/`, `etc/txt.done.data`, dan `utts/`)
+- Aset referensi hasil `npm run refs:build` di `public/ref/`
+
+Dataset dan aset tidak disimpan di Git. Jalankan pipeline data sebelum build
+pertama.
+
+## Menjalankan
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Script
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Perintah | Fungsi |
+|---|---|
+| `npm run dev` | Server pengembangan Next.js |
+| `npm run check` | Type-check, lint, pemeriksaan ekspor, dan unit test |
+| `npm test` | Unit test `src/core` |
+| `npm run refs:build` | Membangun `public/ref/` dan indeks kata dari dataset |
+| `npm run annotations:fetch` | Mengunduh anotasi FestVox ke `dataset/*/utts/` |
+| `npm run accuracy:measure` | Mengukur boundary error dan diskriminasi DTW |
+| `npm run build` | Build statis ke `out/` |
 
-## Learn More
+## Pipeline Aset
 
-To learn more about Next.js, take a look at the following resources:
+1. Letakkan CMU ARCTIC di `dataset/cmu_us_slt_arctic` dan
+   `dataset/cmu_us_bdl_arctic`.
+2. Unduh anotasi fonem: `npm run annotations:fetch`.
+3. Bangun aset: `npm run refs:build`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`refs:build` memilih token yang diapit jeda, memotong audio per kata,
+menghitung MFCC, dan menulis `audio.wav`, `mfcc.bin`, serta `annotation.json`
+untuk setiap penutur. Hanya kata yang punya deret fonem sama pada kedua penutur
+yang masuk indeks.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Pengukuran Akurasi
 
-## Deploy on Vercel
+```bash
+npm run accuracy:measure
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Skrip ini memakai aset yang sudah ada untuk mengukur:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- error batas fonem internal lewat proyeksi `slt` ↔ `bdl`
+- pemisahan `normalizedCost` antara kata yang sama lintas penutur dan kata berbeda
+- equal error rate (EER) pada threshold terbaik
+
+Ini proksi teknis, bukan validasi terhadap rekaman pembelajar.
+
+## Build Statis
+
+```bash
+npm run build
+```
+
+Hasil ada di `out/`. Proyek memakai `output: "export"`, jadi tidak memerlukan
+runtime server. Gunakan `npm run dev` untuk pengembangan; `next start` tidak
+dipakai untuk konfigurasi export ini.

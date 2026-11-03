@@ -1,13 +1,8 @@
-import type { PhonemeResult } from "@/types";
+import type { PhonemeScore } from "@/core/types";
 
 export type WordResult = "correct" | null;
 
-/**
- * Determines overall word pronunciation result.
- *
- * @returns "correct" if every phoneme verdict is "ok", otherwise null
- */
-export function getWordResult(phonemes: PhonemeResult[]): WordResult {
+export function getWordResult(phonemes: readonly PhonemeScore[]): WordResult {
   if (phonemes.length === 0) return null;
   return phonemes.every((p) => p.verdict === "ok") ? "correct" : null;
 }

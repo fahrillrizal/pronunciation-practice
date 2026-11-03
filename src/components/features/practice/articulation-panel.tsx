@@ -1,9 +1,10 @@
-import type { ArticulationEntry, PhonemeResult } from "@/types";
+import { useEffect, useRef } from "react";
+import type { ArticulationEntry, PhonemeScore } from "@/types";
 
 interface ArticulationPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  phonemeResult: PhonemeResult | null;
+  phonemeResult: PhonemeScore | null;
   entry: ArticulationEntry | null;
   onPlayPhoneme: (index: number) => void;
 }
@@ -21,6 +22,18 @@ export function ArticulationPanel({
   entry,
   onPlayPhoneme,
 }: ArticulationPanelProps) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    closeRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || (!phonemeResult && !entry)) {
     return null;
   }
@@ -61,6 +74,7 @@ export function ArticulationPanel({
               </h2>
             </div>
             <button
+              ref={closeRef}
               type="button"
               onClick={onClose}
               className="text-xs border border-neutral-300 px-2.5 py-1 text-neutral-700 hover:bg-neutral-100 cursor-pointer"
@@ -119,7 +133,7 @@ function GuideSection({
   );
 }
 
-function PhonemeStats({ result }: { result: PhonemeResult }) {
+function PhonemeStats({ result }: { result: PhonemeScore }) {
   const verdictLabel =
     result.verdict === "mismatch"
       ? "perlu dilatih"

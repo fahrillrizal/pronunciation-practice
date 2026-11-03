@@ -1,4 +1,2 @@
-export { MOCK_WORD_GROUPS } from "./mock-word-groups";
-export { MOCK_SENTENCE_ATTEMPTS } from "./mock-attempts";
-export { MOCK_ARTICULATION_ENTRIES } from "./mock-articulation";
-
+export { ARTICULATION_ENTRIES } from "./articulation-entries";
+export { REFERENCE_SOURCE, REFERENCE_SPEAKERS, REFERENCE_WORDS } from "./reference-words";
