@@ -14,9 +14,9 @@ function barWidths(phonemes: readonly PhonemeScore[]): number[] {
 }
 
 const VERDICT_LABEL: Record<PhonemeScore["verdict"], string> = {
-  ok: "sesuai",
-  mismatch: "perlu dilatih",
-  "low-confidence": "keyakinan rendah",
+  ok: "correct",
+  mismatch: "needs practice",
+  "low-confidence": "low confidence",
 };
 
 export function PhonemeScores({ phonemes, selectedPhonemeIndex, onSelectPhoneme }: PhonemeScoresProps) {
@@ -25,7 +25,7 @@ export function PhonemeScores({ phonemes, selectedPhonemeIndex, onSelectPhoneme 
   return (
     <div className="border border-neutral-200 bg-white p-5 space-y-3">
       <div className="text-xs uppercase tracking-wider font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
-        Skor Relatif per Fonem
+        Relative Score per Phoneme
       </div>
       <div className="space-y-1.5">
         {phonemes.map((phoneme, index) => (
@@ -33,7 +33,7 @@ export function PhonemeScores({ phonemes, selectedPhonemeIndex, onSelectPhoneme 
             key={`${phoneme.index}-${phoneme.phoneme}`}
             type="button"
             onClick={() => onSelectPhoneme(index)}
-            aria-label={`Fonem ${phoneme.phoneme}, ${VERDICT_LABEL[phoneme.verdict]}`}
+            aria-label={`Phoneme ${phoneme.phoneme}, ${VERDICT_LABEL[phoneme.verdict]}`}
             className={`w-full flex items-center gap-3 px-2 py-1 text-left cursor-pointer transition-colors ${
               selectedPhonemeIndex === index ? "bg-neutral-100" : "hover:bg-neutral-50"
             }`}

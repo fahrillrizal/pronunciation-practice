@@ -17,11 +17,11 @@ interface WordDisplayProps {
 }
 
 function recordingStatus(phase: VadPhase | null): string {
-  if (phase === "calibrating") return "Mengukur kebisingan ruangan...";
-  if (phase === "listening") return "Ucapkan kata sekarang";
-  if (phase === "speaking") return "Merekam ucapan...";
-  if (phase === "done") return "Selesai merekam";
-  return "Menyiapkan mikrofon...";
+  if (phase === "calibrating") return "Measuring room noise...";
+  if (phase === "listening") return "Say the word now";
+  if (phase === "speaking") return "Recording speech...";
+  if (phase === "done") return "Recording finished";
+  return "Preparing microphone...";
 }
 
 const PHONEME_STYLE: Record<string, string> = {
@@ -49,8 +49,8 @@ export function WordDisplay({
         {state === "recording"
           ? recordingStatus(phase)
           : analysis
-            ? `Referensi penutur ${analysis.speaker} — klik fonem untuk panduan`
-            : "Dengarkan referensi, lalu rekam ucapanmu"}
+            ? `Reference speaker ${analysis.speaker} — click a phoneme for guidance`
+            : "Listen to the reference, then record yourself"}
       </p>
 
       <div className="flex flex-col items-center gap-2">
@@ -90,7 +90,7 @@ export function WordDisplay({
           className="inline-flex items-center gap-2 border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:border-neutral-900 hover:text-neutral-950 disabled:cursor-default disabled:text-neutral-400 cursor-pointer"
         >
           <Play size={13} aria-hidden="true" className={isPlayingRecording ? "animate-pulse" : ""} />
-          {isPlayingRecording ? "Memutar rekaman..." : "Dengarkan rekamanmu"}
+          {isPlayingRecording ? "Playing recording..." : "Listen to your recording"}
         </button>
       )}
     </div>

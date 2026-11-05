@@ -68,11 +68,11 @@ export function DurationComparison({
     <div className="border border-neutral-200 bg-white p-5 sm:p-6 space-y-4">
       <div className="flex items-baseline justify-between flex-wrap gap-2 border-b border-neutral-100 pb-3">
         <h3 className="flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-neutral-900">
-          Analisis Durasi &amp; Kesesuaian Fonem
+          Phoneme Duration &amp; Accuracy Analysis
           <ResultBadge result={getWordResult(phonemes)} />
         </h3>
         <span className="text-xs text-neutral-600 font-mono">
-          Referensi {Math.round(referenceTotalMs)} ms · Ucapan {Math.round(userTotalMs)} ms
+          Reference {Math.round(referenceTotalMs)} ms · Your speech {Math.round(userTotalMs)} ms
         </span>
       </div>
 
@@ -81,13 +81,13 @@ export function DurationComparison({
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full min-w-[560px] h-auto select-none font-sans"
           role="group"
-          aria-label="Perbandingan durasi fonem referensi dan ucapan"
+          aria-label="Comparison of reference and spoken phoneme durations"
         >
           <text x="12" y={TOP_BAR_Y + 20} className="text-[12px] font-medium fill-neutral-700">
-            Referensi
+            Reference
           </text>
           <text x="12" y={BOTTOM_BAR_Y + 20} className="text-[12px] font-medium fill-neutral-700">
-            Ucapanmu
+            Your speech
           </text>
 
           {reference.map((bar) => {
@@ -147,9 +147,9 @@ export function DurationComparison({
       </div>
 
       <div className="flex flex-wrap gap-3 text-[11px] text-neutral-600">
-        <Legend swatch="border border-neutral-400 bg-neutral-50" label="Sesuai" />
-        <Legend swatch="border border-red-700 bg-red-100" label="Perlu dilatih" />
-        <Legend swatch="border border-dashed border-neutral-500 bg-neutral-100" label="Keyakinan rendah" />
+        <Legend swatch="border border-neutral-400 bg-neutral-50" label="Correct" />
+        <Legend swatch="border border-red-700 bg-red-100" label="Needs practice" />
+        <Legend swatch="border border-dashed border-neutral-500 bg-neutral-100" label="Low confidence" />
       </div>
 
       {callouts.length > 0 && (
@@ -190,7 +190,7 @@ function PhonemeBar({ bar, x, width, y, verdict = "ok", labelAbove = false, sele
     <g
       role="button"
       tabIndex={0}
-      aria-label={`Fonem ${bar.phoneme}`}
+      aria-label={`Phoneme ${bar.phoneme}`}
       className="cursor-pointer focus:outline-none"
       onClick={onSelect}
       onKeyDown={activate(onSelect)}

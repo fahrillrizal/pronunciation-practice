@@ -44,13 +44,13 @@ export function Waveforms({
   return (
     <div className="border border-neutral-200 bg-white p-5 space-y-3">
       <div className="text-xs uppercase tracking-wider font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
-        Bentuk Gelombang Suara
+        Sound Waveforms
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <WaveformCard label="Referensi" durationMs={referenceTotalMs} path={createWaveformPath(referenceWaveform)} />
 
-        <WaveformCard label="Ucapanmu" durationMs={userTotalMs} path={createWaveformPath(userWaveform)}>
+        <WaveformCard label="Your speech" durationMs={userTotalMs} path={createWaveformPath(userWaveform)}>
           {markers(phonemes, userSpans).map((marker) => {
             const x = (marker.midMs / Math.max(userTotalMs, 1)) * WIDTH;
             const color = marker.verdict === "mismatch" ? "#b91c1c" : "#737373";
@@ -59,7 +59,7 @@ export function Waveforms({
                 key={`marker-${marker.index}`}
                 role="button"
                 tabIndex={0}
-                aria-label={`Fonem ${marker.phoneme}`}
+                aria-label={`Phoneme ${marker.phoneme}`}
                 className="cursor-pointer focus:outline-none"
                 onClick={() => onSelectPhoneme(marker.index)}
                 onKeyDown={(event) => {

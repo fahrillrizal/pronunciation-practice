@@ -26,7 +26,7 @@ export function TextInputPanel({
           htmlFor="practice-textarea"
           className="text-xs uppercase tracking-wider font-semibold text-neutral-600"
         >
-          Kata Latihan
+          Practice Word
         </label>
         <span className="text-[11px] font-mono text-neutral-400 truncate">{sourceLabel}</span>
       </div>
@@ -37,7 +37,7 @@ export function TextInputPanel({
           rows={3}
           value={value}
           readOnly
-          placeholder="Klik 'Generate sentence' untuk mendapat kata latihan"
+          placeholder="Click 'Generate sentence' to get a practice word"
           className="block w-full p-3 pb-12 border border-neutral-300 text-neutral-900 text-base resize-none bg-neutral-50 cursor-default focus:outline-none font-normal leading-relaxed"
         />
 
@@ -47,7 +47,7 @@ export function TextInputPanel({
             onClick={onClear}
             className="absolute top-2 right-2 text-[11px] font-mono text-neutral-400 hover:text-neutral-700 bg-white/90 px-1.5 py-0.5 border border-neutral-200 cursor-pointer"
           >
-            Hapus
+            Clear
           </button>
         )}
 
@@ -55,8 +55,8 @@ export function TextInputPanel({
           type="button"
           onClick={onPlayReference}
           disabled={!hasText}
-          aria-label="Dengarkan referensi"
-          title={hasText ? "Dengarkan rekaman penutur asli" : "Pilih kata terlebih dahulu"}
+          aria-label="Listen to reference"
+          title={hasText ? "Listen to the native speaker recording" : "Choose a word first"}
           className={`absolute bottom-2 right-2 p-1.5 border transition-colors ${
             !hasText
               ? "border-neutral-200 bg-neutral-50 text-neutral-300 cursor-not-allowed"

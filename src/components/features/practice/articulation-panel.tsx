@@ -64,7 +64,7 @@ export function ArticulationPanel({
           <div className="flex items-start justify-between pb-4 border-b border-neutral-200">
             <div>
               <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 block mb-1">
-                Panduan Fonetik
+                Phonetic Guide
               </span>
               <h2
                 id="articulation-title"
@@ -79,7 +79,7 @@ export function ArticulationPanel({
               onClick={onClose}
               className="text-xs border border-neutral-300 px-2.5 py-1 text-neutral-700 hover:bg-neutral-100 cursor-pointer"
             >
-              Tutup
+              Close
             </button>
           </div>
 
@@ -89,19 +89,19 @@ export function ArticulationPanel({
             onClick={() => onPlayPhoneme(phonemeIndex)}
             className="w-full py-2 px-3 border border-neutral-900 bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 cursor-pointer flex items-center justify-center gap-2"
           >
-            Putar fonem ini
+            Play this phoneme
           </button>
 
           {/* Pronunciation guide */}
           <div className="space-y-4">
-            <GuideSection title="Cara Pengucapan">
+            <GuideSection title="How to Pronounce">
               {entry?.howTo ??
-                "Informasi artikulasi spesifik untuk fonem ini belum ditambahkan dalam basis data."}
+                "No specific articulation information for this phoneme has been added to the database yet."}
             </GuideSection>
 
-            <GuideSection title="Kekeliruan Umum">
+            <GuideSection title="Common Mistakes">
               {entry?.commonError ??
-                "Tidak ada catatan kekeliruan khusus untuk penutur bahasa Indonesia."}
+                "No specific mistakes are noted for Indonesian speakers."}
             </GuideSection>
 
             {phonemeResult && <PhonemeStats result={phonemeResult} />}
@@ -136,16 +136,16 @@ function GuideSection({
 function PhonemeStats({ result }: { result: PhonemeScore }) {
   const verdictLabel =
     result.verdict === "mismatch"
-      ? "perlu dilatih"
+      ? "needs practice"
       : result.verdict === "low-confidence"
-        ? "keyakinan rendah (tidak dinilai)"
-        : "sesuai";
+        ? "low confidence (not scored)"
+        : "correct";
 
   return (
     <div className="pt-2 border-t border-neutral-200 text-xs text-neutral-500 font-mono space-y-1">
-      <div>Durasi referensi: {result.referenceDurationMs} ms</div>
-      <div>Durasi rekaman: {result.userDurationMs} ms</div>
-      <div>Status evaluasi: {verdictLabel}</div>
+      <div>Reference duration: {result.referenceDurationMs} ms</div>
+      <div>Recording duration: {result.userDurationMs} ms</div>
+      <div>Evaluation status: {verdictLabel}</div>
     </div>
   );
 }

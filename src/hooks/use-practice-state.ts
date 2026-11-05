@@ -82,7 +82,7 @@ export function usePracticeState() {
     try {
       await playUrl(referenceUrl(analysis?.speaker ?? REFERENCE_SPEAKERS[0]));
     } catch (playbackError) {
-      setError(`Audio referensi tidak dapat diputar: ${message(playbackError)}`);
+      setError(`Reference audio could not be played: ${message(playbackError)}`);
     } finally {
       setIsPlayingReference(false);
     }
@@ -98,7 +98,7 @@ export function usePracticeState() {
       try {
         await playUrl(referenceUrl(analysis.speaker), startMs, startMs + phoneme.referenceDurationMs);
       } catch (playbackError) {
-        setError(`Fonem tidak dapat diputar: ${message(playbackError)}`);
+        setError(`Phoneme could not be played: ${message(playbackError)}`);
       }
     },
     [analysis, referenceUrl],
@@ -111,7 +111,7 @@ export function usePracticeState() {
       const [start, end] = analysis.userBounds;
       await playSamples(userRecording.subarray(start, end), SAMPLE_RATE);
     } catch (playbackError) {
-      setError(`Rekaman tidak dapat diputar: ${message(playbackError)}`);
+      setError(`Recording could not be played: ${message(playbackError)}`);
     } finally {
       setIsPlayingRecording(false);
     }
@@ -147,7 +147,7 @@ export function usePracticeState() {
       setRecordingPhase(null);
 
       if (!captured) {
-        setError("Tidak ada suara yang terdeteksi. Coba lagi dan ucapkan kata dengan jelas.");
+        setError("No speech detected. Try again and say the word clearly.");
         setScreenState(analysis ? "result" : "ready");
         return;
       }
@@ -156,7 +156,7 @@ export function usePracticeState() {
     } catch (recordingError) {
       recordingRef.current = null;
       setRecordingPhase(null);
-      setError(`Mikrofon tidak dapat digunakan: ${message(recordingError)}`);
+      setError(`Microphone could not be used: ${message(recordingError)}`);
       setScreenState(analysis ? "result" : "ready");
     }
   }, [screenState, word, analysis, analyze]);

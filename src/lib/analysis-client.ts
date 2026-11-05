@@ -14,7 +14,7 @@ export function createAnalysisClient(sampleRate: number) {
           if (response.ok) resolve(response.analysis);
           else reject(new Error(response.error));
         };
-        worker.onerror = () => reject(new Error("Worker analisis gagal dijalankan."));
+        worker.onerror = () => reject(new Error("Analysis worker failed to run."));
         worker.postMessage(request, [copy.buffer]);
       });
     },

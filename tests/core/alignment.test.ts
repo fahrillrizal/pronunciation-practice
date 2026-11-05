@@ -123,7 +123,7 @@ describe("scorePhonemes", () => {
       { ...measurement(1), phoneme: "T", userDurationMs: 200 },
       { ...measurement(1), phoneme: "T", userDurationMs: 200 },
     ]);
-    assert.deepEqual(buildCallouts(scores), ["Kamu menahan bunyi /t/ terlalu lama."]);
+    assert.deepEqual(buildCallouts(scores), ["You held the /t/ sound too long."]);
   });
 
   it("is invariant to a uniform distance offset between speakers", () => {

@@ -47,12 +47,12 @@ export function scorePhonemes(
 
 function calloutFor(score: PhonemeScore): string | null {
   const label = `/${score.phoneme.toLowerCase()}/`;
-  if (score.verdict === "low-confidence") return `Bunyi ${label} hampir tidak terdengar dalam ucapanmu.`;
+  if (score.verdict === "low-confidence") return `The ${label} sound is barely audible in your speech.`;
 
   const ratio = score.referenceDurationMs > 0 ? score.userDurationMs / score.referenceDurationMs : 1;
-  if (ratio >= DURATION_TOO_LONG_RATIO) return `Kamu menahan bunyi ${label} terlalu lama.`;
-  if (ratio <= DURATION_TOO_SHORT_RATIO) return `Bunyi ${label} kamu ucapkan terlalu singkat.`;
-  if (score.verdict === "mismatch") return `Bunyi ${label} paling jauh berbeda dari referensi.`;
+  if (ratio >= DURATION_TOO_LONG_RATIO) return `You held the ${label} sound too long.`;
+  if (ratio <= DURATION_TOO_SHORT_RATIO) return `You pronounced the ${label} sound too briefly.`;
+  if (score.verdict === "mismatch") return `The ${label} sound differs most from the reference.`;
   return null;
 }
 

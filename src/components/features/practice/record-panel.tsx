@@ -11,10 +11,10 @@ interface RecordPanelProps {
 }
 
 function recordingLabel(phase: VadPhase | null): string {
-  if (phase === "calibrating") return "Bersiap, jangan bersuara...";
-  if (phase === "listening") return "Ucapkan kata sekarang";
-  if (phase === "speaking" || phase === "done") return "Mendengar ucapanmu...";
-  return "Menyiapkan mikrofon...";
+  if (phase === "calibrating") return "Get ready, stay quiet...";
+  if (phase === "listening") return "Say the word now";
+  if (phase === "speaking" || phase === "done") return "Listening to you...";
+  return "Preparing microphone...";
 }
 
 export function RecordPanel({
@@ -32,7 +32,7 @@ export function RecordPanel({
           <Mic size={24} strokeWidth={1.5} />
         </div>
         <p className="text-sm text-neutral-400 font-medium">
-          Klik &lsquo;Generate sentence&rsquo; dulu untuk mulai
+          Click &lsquo;Generate sentence&rsquo; first to start
         </p>
       </div>
     );
@@ -42,8 +42,8 @@ export function RecordPanel({
     return (
       <div className="w-full min-h-[200px] p-6 border border-neutral-300 bg-white flex flex-col items-center justify-center text-center space-y-3">
         <div className="w-12 h-12 border border-neutral-400 border-t-neutral-900 animate-spin" />
-        <span className="font-medium text-base">Menganalisis ucapan...</span>
-        <span className="text-xs text-neutral-500">DTW berjalan di latar belakang.</span>
+        <span className="font-medium text-base">Analyzing speech...</span>
+        <span className="text-xs text-neutral-500">DTW is running in the background.</span>
       </div>
     );
   }
@@ -51,14 +51,14 @@ export function RecordPanel({
   const label = isRecording
     ? recordingLabel(phase)
     : hasResult
-      ? "Rekam ulang"
-      : "Klik untuk merekam";
+      ? "Record again"
+      : "Click to record";
 
   const hint = isRecording
-    ? "Berhenti otomatis setelah 0,3 detik hening. Klik untuk berhenti sekarang."
+    ? "Stops automatically after 0.3 seconds of silence. Click to stop now."
     : hasResult
-      ? "Ucapkan lagi untuk membandingkan hasil"
-      : "Dengarkan referensi, lalu ucapkan kata dengan jelas";
+      ? "Speak again to compare results"
+      : "Listen to the reference, then say the word clearly";
 
   return (
     <button

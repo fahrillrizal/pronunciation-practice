@@ -41,14 +41,11 @@ export function PracticeView() {
       <main className="max-w-[720px] mx-auto px-4 py-8 space-y-6">
         <header className="border-b border-neutral-200 pb-3">
           <h1 className="text-xl font-semibold tracking-tight text-neutral-900">
-            Latihan Pengucapan Fonem
+            Phoneme Pronunciation Practice
           </h1>
-          <p className="text-xs text-neutral-500 mt-1">
-            Bandingkan ucapanmu dengan rekaman penutur asli menggunakan MFCC + DTW.
-          </p>
         </header>
 
-        <section aria-label="Masukan dan perekaman" className="space-y-3">
+        <section aria-label="Input and recording" className="space-y-3">
           <div className="grid grid-cols-1 min-[760px]:grid-cols-2 gap-3 items-stretch">
             <TextInputPanel
               value={word}
@@ -88,7 +85,7 @@ export function PracticeView() {
         )}
 
         {screenState === "result" && analysis && (
-          <section aria-label="Hasil analisis" className="space-y-5">
+          <section aria-label="Analysis results" className="space-y-5">
             <DurationComparison
               phonemes={analysis.phonemes}
               userSpans={analysis.userSpans}

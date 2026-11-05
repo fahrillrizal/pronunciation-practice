@@ -37,7 +37,7 @@ const unused = [...files]
   );
 
 if (unused.length > 0) {
-  console.error(`Ekspor tanpa pemakai (${unused.length}):\n  ${unused.join("\n  ")}`);
+  console.error(`Unused exports (${unused.length}):\n  ${unused.join("\n  ")}`);
   process.exit(1);
 }
 console.log("Semua ekspor dipakai.");
